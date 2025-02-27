@@ -1,0 +1,18 @@
+{
+  "classe": "email",
+  "objeto": {
+    "to": "only@camp.com",
+    "from": "",
+    "cc": "",
+    "subject": "",
+    "body": "",
+    "appixNames": [
+      "nome do anexo1",
+      "nome do anexo2"
+    ],
+    "appixBodies": [
+      "conteudo do anexo1",
+      "conteudo do anexo2"
+    ]
+  }
+}

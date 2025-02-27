@@ -1,0 +1,16 @@
+{
+  "classe": "email",
+  "objeto": {
+    "to": "all-list@placeholder.com, boss@placeholder.com",
+    "from": "johndoe@placeholder.com",
+    "cc": "listeners@placeholder.com",
+    "subject": "Assunto Importante",
+    "body": "Texto qualquer com quebras \n de linhas \n\n, <b>tags htmls</b> e até mesmo objetos json escapados \n {\"teste\": \"valor\"}",
+    "appixNames": [
+      "nome do anexo unico"
+    ],
+    "appixBodies": [
+      "conteudo do anexo unico"
+    ]
+  }
+}

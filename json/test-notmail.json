@@ -1,0 +1,18 @@
+{
+  "classe": "notemail",
+  "objeto": {
+    "to": "you@placeholder.com, you2@placeholder.com",
+    "from": "johndoe@placeholder.com",
+    "cc": "listeners@placeholder.com",
+    "subject": "Assunto",
+    "body": "Segue o corpo do email",
+    "appixNames": [
+      "nome do anexo1",
+      "nome do anexo2"
+    ],
+    "appixBodies": [
+      "conteudo do anexo1",
+      "conteudo do anexo2"
+    ]
+  }
+}

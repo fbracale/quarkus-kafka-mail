@@ -1,0 +1,15 @@
+{
+  "classe": "email",
+  "objeto": {
+    "to": "you@placeholder.com, you2@placeholder.com",
+    "ghu": "johndoe@placeholder.com",
+    "appixNames": [
+      "nome do anexo1",
+      "nome do anexo2"
+    ],
+    "appixBodies": [
+      "conteudo do anexo1",
+      "conteudo do anexo2"
+    ]
+  }
+}
