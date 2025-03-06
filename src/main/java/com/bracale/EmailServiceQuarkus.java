@@ -24,7 +24,7 @@ public class EmailServiceQuarkus {
         }
 
         Mail m = new Mail();
-        m.setFrom((emailStructure.getFrom().isEmpty()? defaultFrom:emailStructure.getFrom()));
+        m.setFrom((emailStructure.getFrom().isEmpty() ? defaultFrom : emailStructure.getFrom()));
         m.setTo(List.of(emailStructure.getTo().split("\\s*,\\s*")));
         if (!emailStructure.getCc().isEmpty()) m.setCc(List.of(emailStructure.getCc().split("\\s*,\\s*")));
         m.setSubject(emailStructure.getSubject());
