@@ -1,76 +1,140 @@
-# quarkus-kafka-mail
+# Quarkus Kafka Mail
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+Este projeto é uma aplicação Quarkus que integra Kafka e envio de emails. Ele consome mensagens de um tópico Kafka, processa os dados e envia emails usando a API reativa do Quarkus Mailer. Em caso de falhas, as mensagens são enviadas para uma Dead Letter Queue (DLQ) para análise posterior.
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+## Tecnologias Utilizadas
 
-## Running the application in dev mode
+- **Quarkus**: Framework Java para aplicações nativas em nuvem.
+- **Kafka**: Sistema de mensagens distribuído.
+- **Quarkus Mailer**: API para envio de emails.
+- **SmallRye Reactive Messaging**: Integração reativa com Kafka.
+- **Jackson**: Biblioteca para manipulação de JSON.
 
-You can run your application in dev mode that enables live coding using:
+## Funcionalidades
 
-```shell script
-./mvnw quarkus:dev
+- Consumo de mensagens de um tópico Kafka.
+- Desserialização de mensagens JSON em objetos Java.
+- Envio de emails com base nos dados processados.
+- Tratamento de erros e envio de mensagens para uma Dead Letter Queue (DLQ).
+
+## Estrutura do Projeto
+
+### Classes Principais
+
+#### 1. **KafkaConsumer**
+- Consome mensagens do tópico Kafka configurado.
+- Desserializa o JSON recebido em um objeto `EmailStructure`.
+- Envia emails usando o serviço `EmailServiceQuarkus`.
+- Em caso de falhas, envia a mensagem para a DLQ com headers personalizados.
+
+#### 2. **KafkaProducer**
+- Produz mensagens JSON para o tópico Kafka configurado.
+
+#### 3. **EmailServiceQuarkus**
+- Serviço responsável por enviar emails de forma reativa.
+- Valida os dados do email antes de enviá-lo.
+
+#### 4. **EmailStructure**
+- Classe que representa a estrutura do email.
+- Contém campos como `from`, `to`, `subject`, `body`, `cc`, entre outros.
+
+### Configurações
+
+#### Arquivo `application.properties`
+
+```properties
+# Configurações do Kafka
+kafka.bootstrap.servers=localhost:9092
+
+# Configurações do canal de entrada (consumidor)
+mp.messaging.incoming.topic-in.connector=smallrye-kafka
+mp.messaging.incoming.topic-in.auto.offset.reset=earliest
+mp.messaging.incoming.topic-in.topic=kafka-mail
+mp.messaging.incoming.topic-in.value.deserializer=org.apache.kafka.common.serialization.StringDeserializer
+mp.messaging.incoming.topic-in.failure-strategy=dead-letter-queue
+mp.messaging.incoming.topic-in.dead-letter-queue.topic=kafka-mail-dlq
+
+# Configurações do canal de saída (produtor)
+mp.messaging.outgoing.dlq.connector=smallrye-kafka
+mp.messaging.outgoing.dlq.topic=kafka-mail-dlq
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+## Como Executar
 
-## Packaging and running the application
+### Pré-requisitos
 
-The application can be packaged using:
+- **Java 21 ou superior**
+- **Apache Kafka** em execução
+- **Maven**
 
-```shell script
-./mvnw package
+### Passos
+
+1. Clone o repositório:
+   ```bash
+   git clone https://github.com/seu-usuario/quarkus-kafka-mail.git
+   cd quarkus-kafka-mail
+   ```
+
+2. Inicie o Kafka localmente.
+
+3. Compile e execute o projeto:
+   ```bash
+   mvn clean compile quarkus:dev
+   ```
+
+4. Produza mensagens no tópico Kafka configurado (`kafka-mail`):
+   ```bash
+   kafka-console-producer --broker-list localhost:9092 --topic kafka-mail
+   ```
+
+5. Verifique os logs para confirmar o envio de emails ou mensagens enviadas para a DLQ.
+
+## Exemplo de Mensagem Kafka
+
+Envie uma mensagem JSON para o tópico Kafka:
+
+```json
+{
+  "classe": "email",
+  "objeto": {
+    "from": "sender@example.com",
+    "to": "recipient@example.com",
+    "subject": "Test Email",
+    "body": "This is a test email.",
+    "cc": "cc@example.com"
+  }
+}
 ```
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+## Tratamento de Erros
 
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
+- **Mensagens Inválidas**: Se o campo `classe` não for `"email"` ou se o campo `objeto` estiver ausente, a mensagem será enviada para a DLQ.
+- **Falha no Envio de Email**: Se o envio do email falhar, a mensagem será enviada para a DLQ com um header indicando o motivo da falha.
 
-If you want to build an _über-jar_, execute the following command:
+## Estrutura da Dead Letter Queue (DLQ)
 
-```shell script
-./mvnw package -Dquarkus.package.jar.type=uber-jar
+As mensagens enviadas para a DLQ incluem headers personalizados, como:
+
+- `error-message`: Motivo da falha.
+- `original-key`: Chave original da mensagem.
+
+## Testes
+
+### Testes Unitários
+
+- Teste de consumo de mensagens no `KafkaConsumer`.
+- Teste de envio de emails no `EmailServiceQuarkus`.
+
+### Como Executar os Testes
+
+```bash
+mvn test
 ```
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
+## Contribuição
 
-## Creating a native executable
+Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou enviar pull requests.
 
-You can create a native executable using:
+## Licença
 
-```shell script
-./mvnw package -Dnative
-```
-
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
-
-```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
-```
-
-You can then execute your native executable with: `./target/quarkus-kafka-email-1.0.0-SNAPSHOT-runner`
-
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
-
-## Related Guides
-
-- REST ([guide](https://quarkus.io/guides/rest)): A Jakarta REST implementation utilizing build time processing and Vert.x. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it.
-- REST Jackson ([guide](https://quarkus.io/guides/rest#json-serialisation)): Jackson serialization support for Quarkus REST. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it
-- Messaging - Kafka Connector ([guide](https://quarkus.io/guides/kafka-getting-started)): Connect to Kafka with Reactive Messaging
-- Mailer ([guide](https://quarkus.io/guides/mailer)): Send emails
-
-## Provided Code
-
-### Messaging codestart
-
-Use Quarkus Messaging
-
-[Related Apache Kafka guide section...](https://quarkus.io/guides/kafka-reactive-getting-started)
-
-
-### REST
-
-Easily start your REST Web Services
-
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
+Este projeto está licenciado sob a [MIT License](LICENSE).
